@@ -1,7 +1,14 @@
-from flask import Flask, sessions, requests, jsonify
+from flask import Flask, sessions, request, jsonify
 import os
+from services.config import *
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+make_env()
+
+load_dotenv()
+
 
 
 
