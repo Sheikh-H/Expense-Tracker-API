@@ -77,6 +77,7 @@ def login():
 def add_expenses():
     data = request.json
     header = request.headers.get("Authorization")
+    user_id = decode_token(header)
     allowed_fields = {"title", "category", "amount", "date"}
     fields_in_expense = set(data.keys())
     extra = fields_in_expense - allowed_fields
@@ -84,19 +85,56 @@ def add_expenses():
     if extra:
         return jsonify(error="Extra fields in expense"), HTTPStatus.BAD_REQUEST
     if missing:
-        return jsonify(error="Missing fields in expense"), HTTPStatus.BAD_REQUEST
-    
+        return (
+            jsonify(error="Missing fields in expense (title, category, amount, date)"),
+            HTTPStatus.BAD_REQUEST,
+        )
+
     date = validate_date(data)
     if not date:
-        return jsonify(error="Incorrect date format"), HTTPStatus.BAD_REQUEST
-    
-    
-    user_id = decode_token(header)
+        return (
+            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
+            HTTPStatus.BAD_REQUEST,
+        )
+
     data["user_id"] = user_id
     add = add_expense(data)
     if not add:
         return jsonify(error="Unable to add expense"), HTTPStatus.BAD_REQUEST
-    return jsonify(success=f"{add}"), HTTPStatus.CREATED
+    return jsonify(add), HTTPStatus.CREATED
+
+
+@app.route("/expenses", methods=["GET"])
+@login_required
+def list_expenses():
+    header = request.headers.get("Authorization")
+    page = request.args.get("page", 1, type=int)
+    user_id = decode_token(header)
+    limit = request.args.get("limit", 5, type=int)
+    offset = (page - 1) * limit
+
+    expenses, total = all_expenses(user_id, limit, offset)
+
+    total_pages = (total + limit - 1) // limit
+    if not expenses:
+        return jsonify(error="No expenses for this user"), HTTPStatus.BAD_REQUEST
+    if not total:
+        return jsonify(error="No expenses for this user"), HTTPStatus.BAD_REQUEST
+
+    return (
+        jsonify(
+            {
+                "expenses": [dict(row) for row in expenses],
+                "pagination": {
+                    "page": page,
+                    "limit": limit,
+                    "total": total,
+                    "total-pages": total_pages,
+                },
+            }
+        ),
+        HTTPStatus.OK,
+    )
 
 
 if __name__ == "__main__":

@@ -2,9 +2,12 @@ from services.config import *
 
 def execute(query, params=()):
     connection = get_db()
-    connection.execute(query, params)
+    cursor = connection.cursor()
+    cursor.execute(query, params)
     connection.commit()
+    _id = cursor.lastrowid
     connection.close()
+    return _id
 
 def fetch_one(query, params=()):
     connection = get_db()
