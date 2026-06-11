@@ -28,8 +28,8 @@ def make_database():
             name text not null, 
             email text unique not null, 
             hash text not null
-        );
-        """)
+            );
+            """)
     connection.commit()
     connection.execute("""
         create table if not exists expenses (
@@ -40,7 +40,7 @@ def make_database():
             amount real not null,
             date text not null, 
             foreign key (user_id) references users(id) on delete cascade
-        );
-        """)
+            );
+            """)
     connection.commit()
     connection.close()
