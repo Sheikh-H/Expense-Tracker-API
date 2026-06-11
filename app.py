@@ -6,6 +6,7 @@ from services.auth import *
 from services.users import *
 from services.validator import *
 from services.db import *
+from services.expenses import *
 from dotenv import load_dotenv
 
 app = Flask(__name__)
@@ -46,8 +47,8 @@ def register():
 
 @app.route("/login", methods=["POST"])
 def login():
-    allowed_fields = {"email", "password"}
     data = request.json
+    allowed_fields = {"email", "password"}
     fields_in_data = set(data.keys())
     extra = fields_in_data - allowed_fields
     missing = allowed_fields - fields_in_data
@@ -69,6 +70,33 @@ def login():
         return jsonify(error="Password incorrect"), HTTPStatus.BAD_REQUEST
 
     return jsonify(success=f"{token}"), HTTPStatus.OK
+
+
+@app.route("/expenses", methods=["POST"])
+@login_required
+def add_expenses():
+    data = request.json
+    header = request.headers.get("Authorization")
+    allowed_fields = {"title", "category", "amount", "date"}
+    fields_in_expense = set(data.keys())
+    extra = fields_in_expense - allowed_fields
+    missing = allowed_fields - fields_in_expense
+    if extra:
+        return jsonify(error="Extra fields in expense"), HTTPStatus.BAD_REQUEST
+    if missing:
+        return jsonify(error="Missing fields in expense"), HTTPStatus.BAD_REQUEST
+    
+    date = validate_date(data)
+    if not date:
+        return jsonify(error="Incorrect date format"), HTTPStatus.BAD_REQUEST
+    
+    
+    user_id = decode_token(header)
+    data["user_id"] = user_id
+    add = add_expense(data)
+    if not add:
+        return jsonify(error="Unable to add expense"), HTTPStatus.BAD_REQUEST
+    return jsonify(success=f"{add}"), HTTPStatus.CREATED
 
 
 if __name__ == "__main__":
