@@ -148,9 +148,13 @@ def update_expenses(_id):
     for key in keys:
         if key not in allowed_fields:
             return jsonify(error="Incorrect field in request"), HTTPStatus.BAD_REQUEST
-    if data["date"]:
+        
+    if "date" in data:
         date = validate_date(data["date"])
-    updated = update_expense(_id, user_id, data, date)
+        if not date:
+            return jsonify(error="Invalid date format (DD-MM-YYYY)"), HTTPStatus.BAD_REQUEST
+        
+    updated = update_expense(_id, user_id, data)
     if not updated:
         return jsonify(error="Unable to update expense"), HTTPStatus.BAD_REQUEST
     return jsonify(dict(updated)), HTTPStatus.OK

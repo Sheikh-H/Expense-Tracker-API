@@ -74,72 +74,69 @@ def delete_expense(_id, user_id):
         return None
 
 
-def update_expense(_id, user_id, data, date):
-    try:
-        if data["title"]:
-            update = execute(
-                """
-                update expenses set title = ? 
-                where id = ? 
-                and user_id = ?;
+def update_expense(_id, user_id, data):
+    for key, value in data.items():
+        try:
+            if key == "title":
+                update = execute(
+                    """
+                    update expenses set title = ? 
+                    where id = ? and user_id = ?;
+                    """,
+                    (
+                        data["title"],
+                        _id,
+                        user_id,
+                    ),
+                )
+            if key == "amount":
+                update = execute(
+                    """
+                    update expenses set amount = ? 
+                    where id = ? and user_id = ?;
+                    """,
+                    (
+                        data["amount"],
+                        _id,
+                        user_id,
+                    ),
+                )
+            if key == "category":
+                update = execute(
+                    """
+                    update expenses set category = ? 
+                    where id = ? and user_id = ?;
+                    """,
+                    (
+                        str(data["category"]).upper(),
+                        _id,
+                        user_id,
+                    ),
+                )
+            if key == "date":
+                update = execute(
+                    """
+                    update expenses set date = ? 
+                    where id = ? 
+                    and user_id = ?;
+                    """,
+                    (
+                        data["date"],
+                        _id,
+                        user_id,
+                    ),
+                )
+        except Exception as e:
+            print(e)
+            return None
+    expense = fetch_one(
+        """
+                select * from expenses 
+                where id = ? and user_id = ?;
                 """,
-                (
-                    data["title"],
-                    _id,
-                    user_id,
-                ),
-            )
-        if data["amount"]:
-            update = execute(
-                """
-                update expenses set amount = ? 
-                where id = ? 
-                and user_id = ?;
-                """,
-                (
-                    data["amount"],
-                    _id,
-                    user_id,
-                ),
-            )
-        if data["category"]:
-            update = execute(
-                """
-                update expenses set category = ? 
-                where id = ? 
-                and user_id = ?;
-                """,
-                (
-                    str(data["category"]).upper(),
-                    _id,
-                    user_id,
-                ),
-            )
-        if data["date"]:
-            update = execute(
-                """
-                update expenses set title = ? 
-                where id = ? 
-                and user_id = ?;
-                """,
-                (
-                    date,
-                    _id,
-                    user_id,
-                ),
-            )
-        expense = fetch_one(
-            """
-            select * from expenses 
-            where id = ? 
-            and user_id = ?;
-            """,
-            (
-                _id,
-                user_id,
-            ),
-        )
-        return expense
-    except Exception as e:
-        print(e)
-        return None
+        (
+            _id,
+            user_id,
+        ),
+    )
+    return expense
