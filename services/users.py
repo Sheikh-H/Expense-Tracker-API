@@ -8,17 +8,6 @@ def user_register(data):
     email = data.get("email")
     password = data.get("password")
     hash = hash_password(password)
-    execute(
-        """
-                insert into users (name, email, hash)
-                values (?, ?, ?)
-                ;""",
-        (
-            name,
-            email,
-            hash,
-        ),
-    )
     try:
         user = fetch_one(
             """
@@ -27,7 +16,21 @@ def user_register(data):
             ;""",
             (email,),
         )
-        return user["id"]
+        if user:
+            return None
+        user_id = execute(
+            """
+                insert into users (name, email, hash)
+                values (?, ?, ?)
+                ;""",
+            (
+                name,
+                email,
+                hash,
+            ),
+        )
+
+        return user_id
     except Exception as e:
         print(e)
         return None
@@ -53,8 +56,8 @@ def user_login(data):
     password = data.get("password").strip()
     existing = find_user(data)
     try:
-        verifier(existing['hash'], password)
-        token = create_token(existing['id'])
+        verifier(existing["hash"], password)
+        token = create_token(existing["id"])
         return token
     except Exception as e:
         print(e)

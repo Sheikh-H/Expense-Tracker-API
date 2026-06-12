@@ -38,7 +38,7 @@ def register():
 
     user_id = user_register(data)
     if not user_id:
-        return jsonify(error="Unable to register user"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="User already exists"), HTTPStatus.CONFLICT
 
     token = create_token(user_id)
 
@@ -63,11 +63,11 @@ def login():
 
     user = find_user(data)
     if not user:
-        return jsonify(error="Unable to find email"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="Unable to find email"), HTTPStatus.UNAUTHORIZED
 
     token = user_login(data)
     if not token:
-        return jsonify(error="Password incorrect"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="Password incorrect"), HTTPStatus.UNAUTHORIZED
 
     return jsonify(success=f"{token}"), HTTPStatus.OK
 
@@ -100,7 +100,7 @@ def add_expenses():
     data["user_id"] = user_id
     add = add_expense(data)
     if not add:
-        return jsonify(error="Unable to add expense"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="Unable to add expense"), HTTPStatus.INTERNAL_SERVER_ERROR
     return jsonify(add), HTTPStatus.CREATED
 
 
@@ -116,10 +116,11 @@ def list_expenses():
     expenses, total = all_expenses(user_id, limit, offset)
 
     total_pages = (total + limit - 1) // limit
+    
     if not expenses:
-        return jsonify(error="No expenses for this user"), HTTPStatus.BAD_REQUEST
+        return jsonify({"expenses": []}), HTTPStatus.OK
     if not total:
-        return jsonify(error="No expenses for this user"), HTTPStatus.BAD_REQUEST
+        return jsonify({"expenses": []}), HTTPStatus.OK
 
     return (
         jsonify(
@@ -148,15 +149,18 @@ def update_expenses(_id):
     for key in keys:
         if key not in allowed_fields:
             return jsonify(error="Incorrect field in request"), HTTPStatus.BAD_REQUEST
-        
+
     if "date" in data:
         date = validate_date(data["date"])
         if not date:
-            return jsonify(error="Invalid date format (DD-MM-YYYY)"), HTTPStatus.BAD_REQUEST
-        
+            return (
+                jsonify(error="Invalid date format (DD-MM-YYYY)"),
+                HTTPStatus.BAD_REQUEST,
+            )
+
     updated = update_expense(_id, user_id, data)
     if not updated:
-        return jsonify(error="Unable to update expense"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="Unable to update expense"), HTTPStatus.NOT_FOUND
     return jsonify(dict(updated)), HTTPStatus.OK
 
 
@@ -167,7 +171,7 @@ def delete_expenses(_id):
     user_id = decode_token(header)
     delete = delete_expense(_id, user_id)
     if not delete:
-        return jsonify(error="Unable to delete expense"), HTTPStatus.BAD_REQUEST
+        return jsonify(error="Unable to delete expense"), HTTPStatus.NOT_FOUND
     return "", HTTPStatus.NO_CONTENT
 
 

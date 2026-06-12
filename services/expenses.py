@@ -9,7 +9,6 @@ def add_expense(data):
     date = data.get("date")
     user_id = int(data.get("user_id"))
     try:
-
         _id = execute(
             """
             insert into expenses (user_id, title, category, amount, date)
