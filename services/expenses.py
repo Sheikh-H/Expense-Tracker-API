@@ -131,7 +131,7 @@ def update_expense(_id, user_id, data):
             return None
     expense = fetch_one(
         """
-                select * from expenses 
+                select id, title, category, amount, date from expenses 
                 where id = ? and user_id = ?;
                 """,
         (
