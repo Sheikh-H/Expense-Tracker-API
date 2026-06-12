@@ -49,7 +49,97 @@ def all_expenses(user_id, limit, offset):
             """select count(*) from expenses where user_id = ?;""",
             (user_id,),
         )
-        return expenses, total['count(*)']
+        return expenses, total["count(*)"]
+    except Exception as e:
+        print(e)
+        return None
+
+
+def delete_expense(_id, user_id):
+    try:
+        delete_one(
+            """
+            delete from expenses 
+            where id = ? 
+            and user_id = ?;
+            """,
+            (
+                _id,
+                user_id,
+            ),
+        )
+        return True
+    except Exception as e:
+        print(e)
+        return None
+
+
+def update_expense(_id, user_id, data, date):
+    try:
+        if data["title"]:
+            update = execute(
+                """
+                update expenses set title = ? 
+                where id = ? 
+                and user_id = ?;
+                """,
+                (
+                    data["title"],
+                    _id,
+                    user_id,
+                ),
+            )
+        if data["amount"]:
+            update = execute(
+                """
+                update expenses set amount = ? 
+                where id = ? 
+                and user_id = ?;
+                """,
+                (
+                    data["amount"],
+                    _id,
+                    user_id,
+                ),
+            )
+        if data["category"]:
+            update = execute(
+                """
+                update expenses set category = ? 
+                where id = ? 
+                and user_id = ?;
+                """,
+                (
+                    str(data["category"]).upper(),
+                    _id,
+                    user_id,
+                ),
+            )
+        if data["date"]:
+            update = execute(
+                """
+                update expenses set title = ? 
+                where id = ? 
+                and user_id = ?;
+                """,
+                (
+                    date,
+                    _id,
+                    user_id,
+                ),
+            )
+        expense = fetch_one(
+            """
+            select * from expenses 
+            where id = ? 
+            and user_id = ?;
+            """,
+            (
+                _id,
+                user_id,
+            ),
+        )
+        return expense
     except Exception as e:
         print(e)
         return None

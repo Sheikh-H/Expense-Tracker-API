@@ -25,3 +25,8 @@ def fetch_all(query, params=()):
     connection.close()
     return rows
 
+def delete_one(query, params=()):
+    connection = get_db()
+    cursor = connection.cursor()
+    cursor.execute(query, params)
+    connection.close()

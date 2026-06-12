@@ -137,6 +137,36 @@ def list_expenses():
     )
 
 
+@app.route("/expenses/<int:_id>", methods=["PUT"])
+@login_required
+def update_expenses(_id):
+    allowed_fields = ["title", "amount", "category", "date"]
+    header = request.headers.get("Authorization")
+    user_id = decode_token(header)
+    data = request.json
+    keys = data.keys()
+    for key in keys:
+        if key not in allowed_fields:
+            return jsonify(error="Incorrect field in request"), HTTPStatus.BAD_REQUEST
+    if data["date"]:
+        date = validate_date(data["date"])
+    updated = update_expense(_id, user_id, data, date)
+    if not updated:
+        return jsonify(error="Unable to update expense"), HTTPStatus.BAD_REQUEST
+    return jsonify(dict(updated)), HTTPStatus.OK
+
+
+@app.route("/expenses/<int:_id>", methods=["DELETE"])
+@login_required
+def delete_expenses(_id):
+    header = request.headers.get("Authorization")
+    user_id = decode_token(header)
+    delete = delete_expense(_id, user_id)
+    if not delete:
+        return jsonify(error="Unable to delete expense"), HTTPStatus.BAD_REQUEST
+    return "", HTTPStatus.NO_CONTENT
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, port=port, host="0.0.0.0")
