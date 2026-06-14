@@ -109,14 +109,39 @@ def add_expenses():
 def list_expenses():
     header = request.headers.get("Authorization")
     page = request.args.get("page", 1, type=int)
+
+    _on = request.args.get("on", None, type=str)
+    _on_date = validate_date2(_on)
+    if not _on_date:
+        return (
+            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
+            HTTPStatus.BAD_REQUEST,
+        )
+    _to = request.args.get("to", None, type=str)
+    _to_date = validate_date2(_to)
+    if not _to_date:
+        return (
+            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
+            HTTPStatus.BAD_REQUEST,
+        )
+    _from = request.args.get("from", None, type=str)
+    _from_date = validate_date2(_from)
+    if not _from_date:
+        return (
+            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
+            HTTPStatus.BAD_REQUEST,
+        )
+
+    category = request.args.get("category", None, type=str).upper()
+
     user_id = decode_token(header)
     limit = request.args.get("limit", 5, type=int)
     offset = (page - 1) * limit
 
-    expenses, total = all_expenses(user_id, limit, offset)
+    expenses, total = all_expenses(user_id, limit, offset, _on, _to, _from, category)
 
     total_pages = (total + limit - 1) // limit
-    
+
     if not expenses:
         return jsonify({"expenses": []}), HTTPStatus.OK
     if not total:

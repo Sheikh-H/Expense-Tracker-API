@@ -16,3 +16,11 @@ def validate_date(data):
         return date
     except ValueError:
         return None
+
+def validate_date2(datestring):
+    try:
+        date = datetime.strptime(datestring, "%d-%m-%Y")
+        date = date.strftime("%d-%m-%Y")
+        return date
+    except ValueError:
+        return None

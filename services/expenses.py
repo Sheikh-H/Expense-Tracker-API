@@ -29,29 +29,120 @@ def add_expense(data):
         return None
 
 
-def all_expenses(user_id, limit, offset):
-    try:
-        expenses = fetch_all(
-            """
-        select id, title, category, amount, date from expenses 
-        where user_id = ? 
-        limit ? 
-        offset ?;
-        """,
-            (
-                user_id,
-                limit,
-                offset,
-            ),
-        )
-        total = fetch_one(
-            """select count(*) from expenses where user_id = ?;""",
-            (user_id,),
-        )
-        return expenses, total["count(*)"]
-    except Exception as e:
-        print(e)
-        return None
+def all_expenses(user_id, limit, offset, _on, _to, _from, category):
+    if _to and _from:
+        try:
+            expenses = fetch_all(
+                """
+            select id, title, category, amount, date from expenses 
+            where user_id = ? 
+            and date >= ? 
+            and date <= ?
+            limit ? 
+            offset ?;
+            """,
+                (
+                    user_id,
+                    _from,
+                    _to,
+                    limit,
+                    offset,
+                ),
+            )
+            total = fetch_one(
+                """
+                select count(*) from expenses 
+                where user_id = ?;
+                """,
+                (user_id,),
+            )
+            return expenses, total["count(*)"]
+        except Exception as e:
+            print(e)
+            return None
+    if category:
+        try:
+            expenses = fetch_all(
+                """
+            select id, title, category, amount, date from expenses 
+            where user_id = ? 
+            and category = ?
+            limit ? 
+            offset ?;
+            """,
+                (
+                    user_id,
+                    category,
+                    limit,
+                    offset,
+                ),
+            )
+            total = fetch_one(
+                """
+                select count(*) from expenses 
+                where user_id = ?;
+                """,
+                (user_id,),
+            )
+            return expenses, total["count(*)"]
+        except Exception as e:
+            print(e)
+            return None
+    if _on:
+        try:
+            expenses = fetch_all(
+                """
+            select id, title, category, amount, date from expenses 
+            where user_id = ? 
+            and date = ?
+            limit ? 
+            offset ?;
+            """,
+                (
+                    user_id,
+                    _on,
+                    limit,
+                    offset,
+                ),
+            )
+            total = fetch_one(
+                """
+                select count(*) from expenses 
+                where user_id = ?;
+                """,
+                (user_id,),
+            )
+            return expenses, total["count(*)"]
+        except Exception as e:
+            print(e)
+            return None
+    
+    if not _on and not _to and not _from and not category:
+        try:
+            expenses = fetch_all(
+                """
+            select id, title, category, amount, date from expenses 
+            where user_id = ? 
+            limit ? 
+            offset ?;
+            """,
+                (
+                    user_id,
+                    limit,
+                    offset,
+                ),
+            )
+            total = fetch_one(
+                """
+                select count(*) from expenses 
+                where user_id = ?;
+                """,
+                (user_id,),
+            )
+            return expenses, total["count(*)"]
+        except Exception as e:
+            print(e)
+            return None
 
 
 def delete_expense(_id, user_id):
