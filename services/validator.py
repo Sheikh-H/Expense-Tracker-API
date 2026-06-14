@@ -1,5 +1,7 @@
 import re
 from datetime import datetime
+from flask import jsonify
+from http import HTTPStatus
 
 
 def validate_email(data):
@@ -23,4 +25,4 @@ def validate_date2(datestring):
         date = date.strftime("%d-%m-%Y")
         return date
     except ValueError:
-        return None
+        return jsonify(error="Please enter correct date format (DD-MM-YYYY)"), HTTPStatus.BAD_REQUEST

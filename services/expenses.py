@@ -33,35 +33,32 @@ def all_expenses(user_id, limit, offset, _on, _to, _from, category):
     parameters = [
         user_id,
     ]
-    query = """
-    select id, title, category, amount, date from expenses
-    where user_id = ?
-    """
-    
+    query = "select id, title, category, amount, date from expenses where user_id = ? "
+
     if _on and _to or _on and _from:
         return None
 
     if _on:
         parameters.append(_on)
-        query += """and date = ?"""
+        query += """and date = ? """
 
     if _to and _from:
         parameters.append(_from)
         parameters.append(_to)
-        query += """and date >= ? and date <= ?"""
+        query += """and date >= ? and date <= ? """
 
     if category:
         parameters.append(category)
-        query += """and category = ?"""
+        query += """and category = ? """
 
-    query += """
-    offset ?
-    limit ?;
-    """
-    parameters.append(offset, limit)
+    query += """limit ? offset ? ;"""
+    parameters.append(limit)
+    parameters.append(offset)
+
+    print(query)
 
     try:
-        expenses = fetch_all(query, tuple(parameters,))
+        expenses = fetch_all(query, tuple(parameters))
         total = fetch_one(
             """select count(*) from expenses where user_id = ?;""",
             (user_id,),

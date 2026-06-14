@@ -111,28 +111,19 @@ def list_expenses():
     page = request.args.get("page", 1, type=int)
 
     _on = request.args.get("on", None, type=str)
-    _on_date = validate_date2(_on)
-    if not _on_date:
-        return (
-            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
-            HTTPStatus.BAD_REQUEST,
-        )
-    _to = request.args.get("to", None, type=str)
-    _to_date = validate_date2(_to)
-    if not _to_date:
-        return (
-            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
-            HTTPStatus.BAD_REQUEST,
-        )
-    _from = request.args.get("from", None, type=str)
-    _from_date = validate_date2(_from)
-    if not _from_date:
-        return (
-            jsonify(error="Incorrect date format (DD-MM-YYYY)"),
-            HTTPStatus.BAD_REQUEST,
-        )
+    if _on:
+        _on = validate_date2(_on)
 
-    category = request.args.get("category", None, type=str).upper()
+    _to = request.args.get("to", None, type=str)
+    if _to:
+        _to = validate_date2(_to)
+    _from = request.args.get("from", None, type=str)
+    if _from:
+        _from = validate_date2(_from)
+
+    category = request.args.get("category", None, type=str)
+    if category:
+        category = category.upper()
 
     user_id = decode_token(header)
     limit = request.args.get("limit", 5, type=int)
